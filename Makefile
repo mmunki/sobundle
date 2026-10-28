@@ -36,7 +36,7 @@ ANDROID_LDLIBS ?= -llog -ldl
 ANDROID_PACKAGER_CFLAGS ?= -std=c11 -O2 -Wall -Wextra -Wpedantic -D_POSIX_C_SOURCE=200809L
 ANDROID_PACKAGER_LDFLAGS ?= -pie
 
-.PHONY: all host android arm64 check-arm64 clean test
+.PHONY: all host android arm64 check-arm64 test-arm64 clean test
 
 # The release build is ARM64 only.  The host packager is a build-time tool and
 # is not a published asset; use 'make host' when developing on an x86_64 host.
@@ -71,3 +71,6 @@ clean:
 
 test: host
 	@bash tests/run.sh
+
+test-arm64:
+	@bash tests/run-arm64.sh

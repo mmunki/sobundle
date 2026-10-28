@@ -37,6 +37,13 @@ Verify that every Android artifact is an AArch64 ELF64 file:
 make check-arm64
 ```
 
+Run the packager as an AArch64 binary under qemu-user (needs
+`aarch64-linux-gnu-gcc` and `qemu-aarch64`; skipped when they are missing):
+
+```sh
+make test-arm64
+```
+
 The Android NDK is located through `ANDROID_NDK`. Override it if needed:
 
 ```sh
