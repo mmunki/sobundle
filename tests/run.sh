@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 make clean >/dev/null
-make >/dev/null
+make host >/dev/null
 
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
@@ -15,7 +15,7 @@ gcc -shared -fPIC "$tmp/a.c" -o "$tmp/input/liba.so"
 gcc -shared -fPIC "$tmp/b.c" -o "$tmp/input/libb.so"
 printf 'not a library\n' > "$tmp/input/readme.txt"
 
-./build/sobundle "$tmp/input" "$tmp/out.ofs"
+./build/host/sobundle "$tmp/input" "$tmp/out.ofs"
 
 python3 - "$tmp" <<'PY'
 import struct, sys, zlib
