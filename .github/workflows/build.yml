@@ -1,0 +1,51 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Host packager tests
+        run: make test
+
+      - name: ARM64 execution test
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq qemu-user gcc-aarch64-linux-gnu
+          make test-arm64
+
+      - name: Locate the Android NDK
+        id: ndk
+        run: |
+          ndk="$(ls -d "${ANDROID_HOME:-/usr/local/lib/android/sdk}"/ndk/* 2>/dev/null | sort -V | tail -n 1)"
+          if [ -z "$ndk" ]; then
+            echo "no Android NDK on the runner" >&2
+            exit 1
+          fi
+          echo "path=$ndk" >> "$GITHUB_OUTPUT"
+          echo "using $ndk"
+
+      - name: Build and verify arm64-v8a artifacts
+        run: make android check-arm64 ANDROID_NDK="${{ steps.ndk.outputs.path }}"
+
+      - name: Reject non-ARM64 targets
+        run: |
+          if make android ANDROID_NDK="${{ steps.ndk.outputs.path }}" ANDROID_ABI=x86_64; then
+            echo "x86_64 target was not rejected" >&2
+            exit 1
+          fi
+          if make android ANDROID_NDK="${{ steps.ndk.outputs.path }}" ANDROID_TRIPLE=x86_64-linux-android; then
+            echo "x86_64 triple was not rejected" >&2
+            exit 1
+          fi
+
+      - name: Upload arm64-v8a artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sobundle-arm64-v8a
+          path: build/lib/arm64-v8a/
